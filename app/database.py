@@ -22,7 +22,6 @@ Session = sessionmaker(
 Base = declarative_base()
 
 def get_db():
-    pass
     db = Session()
 
     try:
