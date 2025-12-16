@@ -41,6 +41,6 @@ class UserResponse(BaseModel):
 class UserUpdateRequest(BaseModel):
     username:Optional[str]=None
     email:Optional[EmailStr]=None 
-    gender:Optional[str]
+    gender:Optional[str]=None
     password:Optional[str]=None
 

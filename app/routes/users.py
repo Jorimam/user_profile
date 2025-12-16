@@ -118,10 +118,10 @@ def delete_user(user_id:int, db:Session=Depends(get_db)):
     except Exception as e:
         raiseError(f"Failed to delete user: {e}")
 
-@router.patch("/patch/{user_id}", response_model=UserResponse)
-def update_user_by_id(user_id:int, update_user=UserUpdateRequest, db:Session=Depends(get_db)):
-    user_exists = db.query(User).filter(User.id == user_id).first()
-    if not user_exists:
+@router.patch("/{user_id}", response_model=UserResponse)
+def update_user_by_id(user_id:int, update_user:UserUpdateRequest, db:Session=Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={
@@ -129,4 +129,41 @@ def update_user_by_id(user_id:int, update_user=UserUpdateRequest, db:Session=Dep
             
             }
         )
-    
+   
+    user_data = update_user.model_dump(exclude_unset=True)
+    try:
+        for field, value in user_data.items():
+            setattr(user, field, value)
+   
+        db.commit()
+        db.refresh(user)
+        return user
+    except Exception as e:
+        db.rollback()
+        raiseError(f"Failed to update user: {e}")
+
+@router.patch("/update/{username}", response_model=UserResponse)
+def update_user_by_username(username:str, update_user:UserUpdateRequest, db:Session=Depends(get_db)):
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "message":f"User with username {username} not found!"
+            
+            }
+        )
+   
+    user_data = update_user.model_dump(exclude_unset=True)
+    try:
+        for field, value in user_data.items():
+            setattr(user, field, value)
+   
+        db.commit()
+        db.refresh(user)
+        return user
+    except Exception as e:
+        db.rollback()
+        raiseError(f"Failed to update user: {e}")
+
+
